@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Savannah — The Garden Restaurant & Café</title>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --cream: #f5f0e8;
+      --warm-white: #faf8f4;
+      --forest: #2c3b2d;
+      --sage: #7a9474;
+      --gold: #c8a96e;
+      --gold-light: #e8d5a3;
+      --charcoal: #1a1a18;
+      --muted: #8a8578;
+      --border: rgba(200,169,110,0.25);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Jost', sans-serif; background: var(--warm-white); color: var(--charcoal); overflow-x: hidden; }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999; opacity: 0.4;
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh; background: var(--forest);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; overflow: hidden; padding: 60px 24px;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 110%, rgba(122,148,116,0.18) 0%, transparent 70%),
+                  radial-gradient(ellipse 40% 40% at 80% 20%, rgba(200,169,110,0.08) 0%, transparent 60%);
+    }
+    .leaf-deco { position: absolute; opacity: 0.06; font-size: 320px; line-height: 1; color: var(--sage); user-select: none; }
+    .leaf-deco.left  { left: -80px; top: 50%; transform: translateY(-50%) rotate(-20deg); }
+    .leaf-deco.right { right: -80px; top: 50%; transform: translateY(-50%) rotate(20deg); }
+    .hero-eyebrow { font-family:'Jost',sans-serif; font-weight:200; font-size:11px; letter-spacing:0.45em; text-transform:uppercase; color:var(--gold); margin-bottom:24px; opacity:0; animation:fadeUp 1s ease 0.3s forwards; }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:clamp(52px,9vw,110px); color:var(--cream); text-align:center; line-height:0.95; opacity:0; animation:fadeUp 1s ease 0.5s forwards; }
+    .hero-title em { font-style:italic; color:var(--gold-light); }
+    .hero-sub { font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:300; font-size:clamp(16px,2.5vw,22px); color:var(--sage); margin-top:20px; letter-spacing:0.05em; opacity:0; animation:fadeUp 1s ease 0.7s forwards; }
+    .gold-rule { width:60px; height:1px; background:var(--gold); margin:36px auto; opacity:0; animation:fadeUp 1s ease 0.9s forwards; }
+    .hero-scroll { font-family:'Jost',sans-serif; font-weight:200; font-size:10px; letter-spacing:0.4em; text-transform:uppercase; color:var(--muted); opacity:0; animation:fadeUp 1s ease 1.1s forwards; }
+    .scroll-arrow { display:block; margin:10px auto 0; width:1px; height:40px; background:linear-gradient(to bottom,var(--gold),transparent); animation:scrollPulse 2s ease-in-out infinite; }
+
+    /* NAV */
+    nav { position:sticky; top:0; z-index:100; background:rgba(250,248,244,0.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid var(--border); padding:0 clamp(20px,5vw,80px); }
+    .nav-inner { display:flex; align-items:center; justify-content:space-between; height:64px; max-width:1200px; margin:0 auto; }
+    .nav-logo { font-family:'Cormorant Garamond',serif; font-weight:400; font-size:20px; color:var(--forest); letter-spacing:0.05em; }
+    .nav-links { display:flex; gap:36px; list-style:none; }
+    .nav-links a { font-family:'Jost',sans-serif; font-weight:300; font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted); text-decoration:none; transition:color 0.3s; }
+    .nav-links a:hover { color:var(--forest); }
+
+    /* MENU SECTION */
+    .menu-section { max-width:1100px; margin:0 auto; padding:clamp(60px,8vw,120px) clamp(20px,5vw,60px); }
+    .section-header { text-align:center; margin-bottom:80px; }
+    .section-tag { font-family:'Jost',sans-serif; font-weight:200; font-size:10px; letter-spacing:0.5em; text-transform:uppercase; color:var(--gold); display:block; margin-bottom:16px; }
+    .section-title { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:clamp(36px,5vw,60px); color:var(--forest); line-height:1; }
+    .section-title em { font-style:italic; color:var(--sage); }
+
+    /* Tabs */
+    .cat-tabs { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-bottom:64px; }
+    .cat-tab { font-family:'Jost',sans-serif; font-weight:300; font-size:11px; letter-spacing:0.25em; text-transform:uppercase; color:var(--muted); background:none; border:1px solid var(--border); padding:10px 22px; cursor:pointer; transition:all 0.3s; border-radius:2px; }
+    .cat-tab:hover, .cat-tab.active { background:var(--forest); color:var(--cream); border-color:var(--forest); }
+
+    /* Category sections */
+    .cat-section { display:none; }
+    .cat-section.visible { display:block; }
+    .cat-label { display:flex; align-items:center; gap:20px; margin-bottom:40px; }
+    .cat-label::before, .cat-label::after { content:''; flex:1; height:1px; background:var(--border); }
+    .cat-label span { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:22px; color:var(--gold); white-space:nowrap; }
+
+    /* Menu grid */
+    .menu-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:2px; margin-bottom:60px; }
+    .menu-item { background:var(--warm-white); border:1px solid var(--border); padding:28px 30px; cursor:default; transition:all 0.35s cubic-bezier(0.16,1,0.3,1); position:relative; overflow:hidden; opacity:0; transform:translateY(20px); animation:fadeUp 0.6s ease forwards; }
+    .menu-item.has-ar { cursor:pointer; }
+    .menu-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--gold); transform:scaleY(0); transition:transform 0.35s cubic-bezier(0.16,1,0.3,1); }
+    .menu-item:hover { background:var(--cream); transform:translateX(3px); }
+    .menu-item:hover::before { transform:scaleY(1); }
+    .menu-item:nth-child(1){animation-delay:0.05s} .menu-item:nth-child(2){animation-delay:0.10s} .menu-item:nth-child(3){animation-delay:0.15s} .menu-item:nth-child(4){animation-delay:0.20s} .menu-item:nth-child(5){animation-delay:0.25s} .menu-item:nth-child(6){animation-delay:0.30s}
+    .item-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:10px; }
+    .item-name { font-family:'Cormorant Garamond',serif; font-weight:400; font-size:20px; color:var(--forest); line-height:1.2; }
+    .item-price { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:18px; color:var(--gold); white-space:nowrap; }
+    .item-desc { font-family:'Jost',sans-serif; font-weight:300; font-size:12.5px; color:var(--muted); line-height:1.7; letter-spacing:0.02em; }
+    .ar-badge { display:inline-flex; align-items:center; gap:6px; margin-top:14px; font-family:'Jost',sans-serif; font-weight:300; font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:var(--gold); border:1px solid var(--gold); padding:5px 12px; border-radius:1px; transition:all 0.3s; }
+    .ar-badge svg { width:12px; height:12px; }
+    .menu-item.has-ar:hover .ar-badge { background:var(--gold); color:white; }
+
+    /* AR MODAL */
+    .ar-overlay { display:none; position:fixed; inset:0; background:rgba(26,26,24,0.88); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:1000; align-items:center; justify-content:center; padding:20px; }
+    .ar-overlay.open { display:flex; }
+    .ar-modal { background:var(--forest); border:1px solid rgba(200,169,110,0.3); max-width:700px; width:100%; position:relative; animation:modalIn 0.5s cubic-bezier(0.16,1,0.3,1); }
+    .ar-modal-header { padding:28px 32px 20px; border-bottom:1px solid rgba(200,169,110,0.2); display:flex; justify-content:space-between; align-items:flex-start; }
+    .ar-modal-title { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:28px; color:var(--cream); }
+    .ar-modal-sub { font-family:'Jost',sans-serif; font-weight:200; font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color:var(--sage); margin-top:4px; }
+    .ar-close { background:none; border:1px solid rgba(200,169,110,0.3); color:var(--gold); width:36px; height:36px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; transition:all 0.3s; flex-shrink:0; }
+    .ar-close:hover { background:rgba(200,169,110,0.15); }
+
+    model-viewer { width:100%; height:420px; background:transparent; --poster-color:transparent; }
+
+    .ar-modal-footer { padding:20px 32px; border-top:1px solid rgba(200,169,110,0.2); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .ar-hint { font-family:'Jost',sans-serif; font-weight:200; font-size:11px; letter-spacing:0.2em; color:var(--sage); }
+    .ar-view-btn { font-family:'Jost',sans-serif; font-weight:300; font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color:var(--charcoal); background:var(--gold); border:none; padding:12px 28px; cursor:pointer; transition:all 0.3s; }
+    .ar-view-btn:hover { background:var(--gold-light); }
+
+    /* Mobile AR prompt banner */
+    .ar-mobile-banner { display:none; background:rgba(200,169,110,0.15); border:1px solid rgba(200,169,110,0.3); padding:12px 32px; text-align:center; }
+    .ar-mobile-banner p { font-family:'Jost',sans-serif; font-weight:300; font-size:11px; letter-spacing:0.2em; color:var(--gold-light); }
+    @media (max-width:768px) { .ar-mobile-banner { display:block; } model-viewer { height:320px; } }
+
+    /* FOOTER */
+    footer { background:var(--forest); padding:60px clamp(20px,5vw,80px); text-align:center; border-top:1px solid rgba(200,169,110,0.2); }
+    .footer-logo { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:32px; color:var(--cream); letter-spacing:0.05em; margin-bottom:8px; }
+    .footer-sub { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:15px; color:var(--sage); margin-bottom:32px; }
+    .footer-info { font-family:'Jost',sans-serif; font-weight:200; font-size:11px; letter-spacing:0.3em; color:var(--muted); line-height:2.2; }
+    .footer-gold-rule { width:40px; height:1px; background:var(--gold); margin:28px auto; opacity:0.5; }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes scrollPulse { 0%,100%{opacity:0.4;transform:scaleY(1)} 50%{opacity:1;transform:scaleY(1.2)} }
+    @keyframes modalIn { from{opacity:0;transform:translateY(30px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+
+    @media (max-width:600px) { .nav-links{display:none} .menu-grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="leaf-deco left">🌿</div>
+  <div class="leaf-deco right">🌿</div>
+  <p class="hero-eyebrow">Est. 2024 · Pune, India</p>
+  <h1 class="hero-title"><em>Savannah</em></h1>
+  <p class="hero-sub">The Garden Restaurant &amp; Café</p>
+  <div class="gold-rule"></div>
+  <p class="hero-scroll">Explore the Menu</p>
+  <span class="scroll-arrow"></span>
+</section>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <div class="nav-inner">
+    <span class="nav-logo">Savannah</span>
+    <ul class="nav-links">
+      <li><a href="#menu">Menu</a></li>
+      <li><a href="#footer">Visit</a></li>
+      <li><a href="#footer">Reserve</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- MENU -->
+<section class="menu-section" id="menu">
+  <div class="section-header">
+    <span class="section-tag">Curated with care</span>
+    <h2 class="section-title">Our <em>Menu</em></h2>
+  </div>
+
+  <!-- Tabs -->
+  <div class="cat-tabs">
+    <button class="cat-tab active" onclick="showCat('all',this)">All</button>
+    <button class="cat-tab" onclick="showCat('breakfast',this)">Breakfast</button>
+    <button class="cat-tab" onclick="showCat('mains',this)">Mains</button>
+    <button class="cat-tab" onclick="showCat('garden',this)">Garden Plates</button>
+    <button class="cat-tab" onclick="showCat('cafe',this)">Café</button>
+    <button class="cat-tab" onclick="showCat('desserts',this)">Desserts</button>
+    <button class="cat-tab" onclick="showCat('drinks',this)">Drinks</button>
+  </div>
+
+  <!-- BREAKFAST -->
+  <div class="cat-section visible" data-cat="breakfast">
+    <div class="cat-label"><span>Morning Plates</span></div>
+    <div class="menu-grid">
+
+      <div class="menu-item has-ar" onclick="openAR('sandwhich.glb','Avocado Sandwich','Smashed avocado, cherry tomatoes, microgreens on multigrain bread')">
+        <div class="item-top"><span class="item-name">Avocado Sandwich</span><span class="item-price">₹280</span></div>
+        <p class="item-desc">Smashed avocado, cherry tomatoes, microgreens, chilli flakes, multigrain bread</p>
+        <span class="ar-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          View in AR
+        </span>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Garden Eggs Benedict</span><span class="item-price">₹320</span></div>
+        <p class="item-desc">Poached eggs, hollandaise, wild arugula on sourdough toast</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">French Toast</span><span class="item-price">₹260</span></div>
+        <p class="item-desc">Brioche, berry compote, mascarpone, candied walnuts, maple drizzle</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Granola Bowl</span><span class="item-price">₹240</span></div>
+        <p class="item-desc">House granola, seasonal fruit, Greek yoghurt, honey, toasted seeds</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MAINS -->
+  <div class="cat-section visible" data-cat="mains">
+    <div class="cat-label"><span>Signature Mains</span></div>
+    <div class="menu-grid">
+
+      <div class="menu-item has-ar" onclick="openAR('burger.glb','Savannah Signature Burger','Double smash patty, aged cheddar, caramelised onion jam, truffle aioli, brioche bun')">
+        <div class="item-top"><span class="item-name">Savannah Signature Burger</span><span class="item-price">₹480</span></div>
+        <p class="item-desc">Double smash patty, aged cheddar, caramelised onion jam, truffle aioli, brioche bun</p>
+        <span class="ar-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          View in AR
+        </span>
+      </div>
+
+      <div class="menu-item has-ar" onclick="openAR('pizza.glb','Margherita Pizza','San Marzano tomato, fior di latte, fresh basil, extra virgin olive oil')">
+        <div class="item-top"><span class="item-name">Margherita Pizza</span><span class="item-price">₹420</span></div>
+        <p class="item-desc">San Marzano tomato, fior di latte mozzarella, fresh basil, extra virgin olive oil</p>
+        <span class="ar-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          View in AR
+        </span>
+      </div>
+
+      <div class="menu-item has-ar" onclick="openAR('pizza2.glb','Garden Veggie Pizza','Roasted peppers, zucchini, olives, goat cheese, herb oil, thin crust')">
+        <div class="item-top"><span class="item-name">Garden Veggie Pizza</span><span class="item-price">₹440</span></div>
+        <p class="item-desc">Roasted peppers, zucchini, olives, goat cheese, herb oil, thin crust</p>
+        <span class="ar-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          View in AR
+        </span>
+      </div>
+
+      <div class="menu-item has-ar" onclick="openAR('sushi.glb','Sushi Platter','Chef selection of 12 pieces — nigiri, maki, and seasonal rolls')">
+        <div class="item-top"><span class="item-name">Sushi Platter</span><span class="item-price">₹780</span></div>
+        <p class="item-desc">Chef selection of 12 pieces — nigiri, maki, and seasonal rolls, wasabi, pickled ginger</p>
+        <span class="ar-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          View in AR
+        </span>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Mushroom Risotto</span><span class="item-price">₹420</span></div>
+        <p class="item-desc">Wild mushrooms, truffle oil, parmesan, thyme, arborio rice</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Pan-Seared Salmon</span><span class="item-price">₹620</span></div>
+        <p class="item-desc">Atlantic salmon, lemon butter, asparagus, capers, dill cream</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GARDEN PLATES -->
+  <div class="cat-section visible" data-cat="garden">
+    <div class="cat-label"><span>From the Garden</span></div>
+    <div class="menu-grid">
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Heirloom Tomato Salad</span><span class="item-price">₹280</span></div>
+        <p class="item-desc">Heirloom tomatoes, burrata, basil oil, fleur de sel, toasted sourdough croutons</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Grilled Vegetable Platter</span><span class="item-price">₹320</span></div>
+        <p class="item-desc">Seasonal vegetables, romesco sauce, labneh, herb oil, flatbread</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Green Goddess Bowl</span><span class="item-price">₹340</span></div>
+        <p class="item-desc">Quinoa, edamame, cucumber, avocado, kale, tahini dressing, seeds</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Roasted Beet Salad</span><span class="item-price">₹290</span></div>
+        <p class="item-desc">Golden & red beets, goat cheese, candied pecans, orange vinaigrette, watercress</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CAFÉ -->
+  <div class="cat-section visible" data-cat="cafe">
+    <div class="cat-label"><span>Café Essentials</span></div>
+    <div class="menu-grid">
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Single Origin Pour Over</span><span class="item-price">₹180</span></div>
+        <p class="item-desc">Rotating single origin, hand-poured, tasting notes on request</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Flat White</span><span class="item-price">₹160</span></div>
+        <p class="item-desc">Double ristretto, microfoam, house blend from Coorg estate</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Matcha Latte</span><span class="item-price">₹200</span></div>
+        <p class="item-desc">Ceremonial grade matcha, oat milk or whole milk, sweetened on request</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Cold Brew</span><span class="item-price">₹190</span></div>
+        <p class="item-desc">18-hour steep, served over ice, hint of vanilla, black or with oat milk</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Turmeric Latte</span><span class="item-price">₹180</span></div>
+        <p class="item-desc">Golden milk, black pepper, ginger, cinnamon, coconut milk</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Espresso Tonic</span><span class="item-price">₹210</span></div>
+        <p class="item-desc">Double espresso, premium tonic water, orange peel, served tall</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DESSERTS -->
+  <div class="cat-section visible" data-cat="desserts">
+    <div class="cat-label"><span>Sweet Finales</span></div>
+    <div class="menu-grid">
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Dark Chocolate Fondant</span><span class="item-price">₹320</span></div>
+        <p class="item-desc">Valrhona chocolate, molten centre, vanilla bean ice cream, praline</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Crème Brûlée</span><span class="item-price">₹280</span></div>
+        <p class="item-desc">Classic vanilla custard, caramelised sugar crust, fresh berries</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Basque Cheesecake</span><span class="item-price">₹290</span></div>
+        <p class="item-desc">Burnt cheesecake, seasonal fruit coulis, whipped cream</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Mango Panna Cotta</span><span class="item-price">₹260</span></div>
+        <p class="item-desc">Set cream, Alphonso mango gel, coconut crumble, micro mint</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DRINKS -->
+  <div class="cat-section visible" data-cat="drinks">
+    <div class="cat-label"><span>Garden Drinks</span></div>
+    <div class="menu-grid">
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Garden Lemonade</span><span class="item-price">₹160</span></div>
+        <p class="item-desc">Fresh lemon, house-made basil syrup, soda, cucumber ribbons</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Rose Iced Tea</span><span class="item-price">₹170</span></div>
+        <p class="item-desc">Darjeeling tea, rose water, lychee, honey, served tall over ice</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Watermelon Cooler</span><span class="item-price">₹180</span></div>
+        <p class="item-desc">Fresh watermelon, mint, lime, hint of jalapeño, sea salt rim</p>
+      </div>
+
+      <div class="menu-item">
+        <div class="item-top"><span class="item-name">Seasonal Smoothie</span><span class="item-price">₹220</span></div>
+        <p class="item-desc">Rotating seasonal blend — ask your server for today's selection</p>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="footer-logo">Savannah</div>
+  <p class="footer-sub">The Garden Restaurant &amp; Café</p>
+  <div class="footer-gold-rule"></div>
+  <p class="footer-info">
+    123 Garden Lane, Koregaon Park, Pune 411001<br>
+    Open daily · 8:00 AM – 11:00 PM<br>
+    +91 98765 43210 · hello@savannahpune.com
+  </p>
+</footer>
+
+<!-- AR MODAL -->
+<div class="ar-overlay" id="ar-overlay" onclick="closeAROutside(event)">
+  <div class="ar-modal">
+    <div class="ar-modal-header">
+      <div>
+        <div class="ar-modal-title" id="ar-title">—</div>
+        <div class="ar-modal-sub">3D Preview · On mobile: tap "Place on Table" for Live AR</div>
+      </div>
+      <button class="ar-close" onclick="closeAR()">✕</button>
+    </div>
+
+    <div class="ar-mobile-banner">
+      <p>📱 You're on mobile — tap <strong>Place on Table</strong> below to see this dish in AR on your actual table</p>
+    </div>
+
+    <model-viewer
+      id="food-viewer"
+      src=""
+      alt="Food 3D model"
+      auto-rotate
+      camera-controls
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      ar-scale="auto"
+      environment-image="neutral"
+      shadow-intensity="1.2"
+      exposure="1.1"
+      reveal="auto"
+    ></model-viewer>
+
+    <div class="ar-modal-footer">
+      <span class="ar-hint" id="ar-desc">—</span>
+      <button class="ar-view-btn" id="ar-btn" onclick="launchAR()">📷 Place on Table</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showCat(cat, btn) {
+    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.cat-section').forEach(s => {
+      s.classList.toggle('visible', cat === 'all' || s.dataset.cat === cat);
+    });
+  }
+
+  function openAR(glbFile, title, desc) {
+    const viewer = document.getElementById('food-viewer');
+    document.getElementById('ar-title').textContent = title;
+    document.getElementById('ar-desc').textContent = desc;
+    viewer.src = glbFile;
+    document.getElementById('ar-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    // On mobile: auto-trigger AR after model loads
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) {
+      viewer.addEventListener('load', function onLoad() {
+        viewer.removeEventListener('load', onLoad);
+        // Short delay so user sees the model first
+        setTimeout(() => {
+          if (viewer.canActivateAR) viewer.activateAR();
+        }, 1200);
+      }, { once: true });
+    }
+  }
+
+  function closeAR() {
+    document.getElementById('ar-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+    // Stop model loading to save bandwidth
+    setTimeout(() => { document.getElementById('food-viewer').src = ''; }, 400);
+  }
+
+  function closeAROutside(e) {
+    if (e.target === document.getElementById('ar-overlay')) closeAR();
+  }
+
+  function launchAR() {
+    const viewer = document.getElementById('food-viewer');
+    if (viewer.canActivateAR) {
+      viewer.activateAR();
+    } else {
+      alert('AR works on mobile browsers (Chrome on Android, Safari on iPhone). Open this page on your phone!');
+    }
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAR(); });
+</script>
+
+</body>
+</html>
