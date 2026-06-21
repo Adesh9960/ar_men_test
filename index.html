@@ -4,8 +4,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Savannah — The Garden Restaurant & Café</title>
-  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+  <!-- Preconnect to speed up external resource loading -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://ajax.googleapis.com">
+  <link rel="dns-prefetch" href="https://ajax.googleapis.com">
+
+  <!-- Fonts first so text renders immediately -->
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+
+  <!-- model-viewer: defer until after page paint, only needed when AR opens -->
+  <script>
+    // Load model-viewer script on first AR open, not on page load
+    window._mvLoaded = false;
+    window._mvCallbacks = [];
+    function ensureModelViewer(cb) {
+      if (window._mvLoaded) { cb(); return; }
+      window._mvCallbacks.push(cb);
+      if (document.getElementById('mv-script')) return;
+      var s = document.createElement('script');
+      s.type = 'module';
+      s.id = 'mv-script';
+      s.src = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js';
+      s.onload = function() {
+        window._mvLoaded = true;
+        window._mvCallbacks.forEach(function(fn){ fn(); });
+        window._mvCallbacks = [];
+      };
+      document.head.appendChild(s);
+    }
+  </script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -103,7 +131,15 @@
     .ar-close { background:none; border:1px solid rgba(200,169,110,0.3); color:var(--gold); width:36px; height:36px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; transition:all 0.3s; flex-shrink:0; }
     .ar-close:hover { background:rgba(200,169,110,0.15); }
 
-    model-viewer { width:100%; height:420px; background:transparent; --poster-color:transparent; }
+    /* AR Loading state */
+    .ar-loading { display:none; flex-direction:column; align-items:center; justify-content:center; height:420px; gap:16px; }
+    .ar-loading.visible { display:flex; }
+    .ar-spinner { width:36px; height:36px; border:2px solid rgba(200,169,110,0.2); border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite; }
+    .ar-loading-text { font-family:'Jost',sans-serif; font-weight:200; font-size:11px; letter-spacing:0.35em; text-transform:uppercase; color:var(--sage); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    model-viewer { width:100%; height:420px; background:transparent; --poster-color:transparent; display:none; }
+    model-viewer.ready { display:block; }
 
     .ar-modal-footer { padding:20px 32px; border-top:1px solid rgba(200,169,110,0.2); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
     .ar-hint { font-family:'Jost',sans-serif; font-weight:200; font-size:11px; letter-spacing:0.2em; color:var(--sage); }
@@ -111,9 +147,12 @@
     .ar-view-btn:hover { background:var(--gold-light); }
 
     /* Mobile AR prompt banner */
-    .ar-mobile-banner { display:none; background:rgba(200,169,110,0.15); border:1px solid rgba(200,169,110,0.3); padding:12px 32px; text-align:center; }
+    .ar-mobile-banner { display:none; background:rgba(200,169,110,0.12); border:1px solid rgba(200,169,110,0.3); padding:10px 32px; text-align:center; }
     .ar-mobile-banner p { font-family:'Jost',sans-serif; font-weight:300; font-size:11px; letter-spacing:0.2em; color:var(--gold-light); }
-    @media (max-width:768px) { .ar-mobile-banner { display:block; } model-viewer { height:320px; } }
+    @media (max-width:768px) {
+      .ar-mobile-banner { display:block; }
+      .ar-loading, model-viewer { height:320px; }
+    }
 
     /* FOOTER */
     footer { background:var(--forest); padding:60px clamp(20px,5vw,80px); text-align:center; border-top:1px solid rgba(200,169,110,0.2); }
@@ -409,7 +448,13 @@
     </div>
 
     <div class="ar-mobile-banner">
-      <p>📱 You're on mobile — tap <strong>Place on Table</strong> below to see this dish in AR on your actual table</p>
+      <p>📱 On mobile — tap <strong>Place on Table</strong> below to view this dish in AR on your real table</p>
+    </div>
+
+    <!-- Loading spinner shown while model-viewer script loads or model downloads -->
+    <div class="ar-loading" id="ar-loading">
+      <div class="ar-spinner"></div>
+      <span class="ar-loading-text">Loading 3D model…</span>
     </div>
 
     <model-viewer
@@ -424,6 +469,7 @@
       environment-image="neutral"
       shadow-intensity="1.2"
       exposure="1.1"
+      loading="eager"
       reveal="auto"
     ></model-viewer>
 
@@ -435,6 +481,7 @@
 </div>
 
 <script>
+  /* ── Category tabs ─────────────────────────────────────────────── */
   function showCat(cat, btn) {
     document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
@@ -443,48 +490,76 @@
     });
   }
 
+  /* ── AR helpers ─────────────────────────────────────────────────── */
+  var _pendingGlb = null;
+
+  function showSpinner() {
+    document.getElementById('ar-loading').classList.add('visible');
+    document.getElementById('food-viewer').classList.remove('ready');
+  }
+
+  function hideSpinner() {
+    document.getElementById('ar-loading').classList.remove('visible');
+    document.getElementById('food-viewer').classList.add('ready');
+  }
+
   function openAR(glbFile, title, desc) {
-    const viewer = document.getElementById('food-viewer');
+    // Set title & description immediately
     document.getElementById('ar-title').textContent = title;
     document.getElementById('ar-desc').textContent = desc;
-    viewer.src = glbFile;
+
+    // Show the overlay with spinner right away — feels instant
     document.getElementById('ar-overlay').classList.add('open');
     document.body.style.overflow = 'hidden';
+    showSpinner();
 
-    // On mobile: auto-trigger AR after model loads
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (isMobile) {
+    // Load model-viewer script if not already loaded, then set src
+    ensureModelViewer(function() {
+      var viewer = document.getElementById('food-viewer');
+
+      // Listen for model load to hide spinner
       viewer.addEventListener('load', function onLoad() {
         viewer.removeEventListener('load', onLoad);
-        // Short delay so user sees the model first
-        setTimeout(() => {
-          if (viewer.canActivateAR) viewer.activateAR();
-        }, 1200);
+        hideSpinner();
       }, { once: true });
-    }
+
+      // Handle model errors gracefully
+      viewer.addEventListener('error', function onErr() {
+        viewer.removeEventListener('error', onErr);
+        document.getElementById('ar-loading').querySelector('.ar-loading-text').textContent = 'Model unavailable';
+      }, { once: true });
+
+      viewer.src = glbFile;
+    });
   }
 
   function closeAR() {
     document.getElementById('ar-overlay').classList.remove('open');
     document.body.style.overflow = '';
-    // Stop model loading to save bandwidth
-    setTimeout(() => { document.getElementById('food-viewer').src = ''; }, 400);
+    // Reset after transition so user doesn't see blank flash
+    setTimeout(function() {
+      var viewer = document.getElementById('food-viewer');
+      viewer.src = '';
+      viewer.classList.remove('ready');
+      document.getElementById('ar-loading').classList.remove('visible');
+    }, 400);
   }
 
   function closeAROutside(e) {
     if (e.target === document.getElementById('ar-overlay')) closeAR();
   }
 
+  // Only called when user explicitly taps "Place on Table"
   function launchAR() {
-    const viewer = document.getElementById('food-viewer');
+    var viewer = document.getElementById('food-viewer');
     if (viewer.canActivateAR) {
       viewer.activateAR();
     } else {
-      alert('AR works on mobile browsers (Chrome on Android, Safari on iPhone). Open this page on your phone!');
+      alert('AR is supported on mobile browsers — Chrome on Android or Safari on iPhone. Open this page on your phone to place the dish on your table!');
     }
   }
 
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAR(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeAR(); });
 </script>
 
 </body>
